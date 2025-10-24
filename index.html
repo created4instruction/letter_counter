@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Letter Counter</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a34; --text:#e9edf7; --muted:#a8b2d1; --accent:#81a1ff; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:linear-gradient(180deg,#0b1020,#0e1330);color:var(--text);min-height:100vh;display:grid;place-items:center}
+    .card{width:min(720px,92vw);background:var(--card);border:1px solid #1f2a4d;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:28px}
+    h1{margin:0 0 8px;font-size:28px} p{margin:0 0 18px;color:var(--muted)}
+    form{display:flex;gap:10px;flex-wrap:wrap}
+    input[type="text"]{flex:1;min-width:260px;padding:12px 14px;border-radius:12px;border:1px solid #2a3766;background:#0f1530;color:var(--text)}
+    button{padding:12px 16px;border:1px solid #2b59ff;border-radius:12px;background:linear-gradient(180deg,#2b59ff,#254be0);color:white;font-weight:600;cursor:pointer}
+    button[disabled]{opacity:.6;cursor:not-allowed}
+    .result{margin-top:16px;padding:14px;border-radius:12px;background:#0e1736;border:1px solid #233569}
+    .small{font-size:12px;color:var(--muted)}
+    .err{color:#ff9aa2}
+    .ok{color:#a4ffb3}
+    .row{display:flex;gap:14px;flex-wrap:wrap}
+    code{background:#0f1530;border:1px solid #202b55;padding:2px 6px;border-radius:6px}
+    footer{margin-top:10px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Letter Counter</h1>
+    <p>Enter any text below. We’ll count alphabetic letters (A–Z, a–z &amp; Unicode letters).</p>
+
+    <form id="form">
+      <input id="text" type="text" placeholder="e.g., Hello World 123!" autocomplete="off" />
+      <button id="submit" type="submit">Count letters</button>
+    </form>
+
+    <div id="result" class="result" hidden></div>
+    <footer class="small">
+      API: <code id="apiLabel"></code> • Note: per-IP rate limit: <code>10 / minute</code>.
+    </footer>
+  </main>
+
+  <script>
+    // === Configure your API Gateway invoke URL here ===
+    const API_URL = "YOUR_API_GATEWAY_URL"; // e.g., https://abc123.execute-api.us-west-2.amazonaws.com/prod/count
+
+    const form = document.getElementById('form');
+    const input = document.getElementById('text');
+    const result = document.getElementById('result');
+    const button = document.getElementById('submit');
+    const apiLabel = document.getElementById('apiLabel');
+    apiLabel.textContent = API_URL || "(not configured)";
+
+    function show(msg, cls="") {
+      result.hidden = false;
+      result.className = "result " + cls;
+      result.innerHTML = msg;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = (input.value ?? "").toString();
+
+      if (!API_URL || API_URL.includes("YOUR_API_GATEWAY_URL")) {
+        show("⚠️ API URL is not configured. Edit <code>API_URL</code> in the HTML.", "err");
+        return;
+      }
+
+      button.disabled = true;
+      show("Working…");
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        const isJson = (resp.headers.get("content-type") || "").includes("application/json");
+        const data = isJson ? await resp.json() : {};
+
+        if (resp.status === 200) {
+          const letters = data.letters ?? "(unknown)";
+          const count = data.requests_in_window;
+          const limit = data.limit;
+          const win = data.window_seconds;
+          show(
+            `✅ Letters: <strong class="ok">${letters}</strong><br>` +
+            `<span class="small">Requests in current window: <code>${count}/${limit}</code> (window: ${win}s)</span>`
+          );
+        } else if (resp.status === 429) {
+          const msg = data.error || "Too Many Requests";
+          const detail = data.message ? ` – ${data.message}` : "";
+          show(`⛔ <strong>${msg}</strong>${detail}`, "err");
+        } else {
+          show(`⚠️ Unexpected response (${resp.status}). ${data.error || ""}`, "err");
+        }
+      } catch (err) {
+        show(`❌ Network or CORS error. ${err.message}`, "err");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+
