@@ -59,8 +59,8 @@
       e.preventDefault();
       const text = (input.value ?? "").toString();
 
-      if (!API_URL || API_URL.includes("YOUR_API_GATEWAY_URL")) {
-        show("⚠️ API URL is not configured. Edit <code>API_URL</code> in the HTML.", "err");
+      if (!API_URL || API_URL.includes("https://w7lgtnuyvehd3unquantfoufjy0qaphc.lambda-url.us-east-2.on.aws/")) {
+        show("API URL is not configured.", "err");
         return;
       }
 
@@ -84,18 +84,18 @@
           const limit = data.limit;
           const win = data.window_seconds;
           show(
-            `✅ Letters: <strong class="ok">${letters}</strong><br>` +
+            `Letters: <strong class="ok">${letters}</strong><br>` +
             `<span class="small">Requests in current window: <code>${count}/${limit}</code> (window: ${win}s)</span>`
           );
         } else if (resp.status === 429) {
           const msg = data.error || "Too Many Requests";
           const detail = data.message ? ` – ${data.message}` : "";
-          show(`⛔ <strong>${msg}</strong>${detail}`, "err");
+          show('<strong>${msg}</strong>${detail}`, "err");
         } else {
-          show(`⚠️ Unexpected response (${resp.status}). ${data.error || ""}`, "err");
+          show(`Unexpected response (${resp.status}). ${data.error || ""}`, "err");
         }
       } catch (err) {
-        show(`❌ Network or CORS error. ${err.message}`, "err");
+        show(`Network or CORS error. ${err.message}`, "err");
       } finally {
         button.disabled = false;
       }
