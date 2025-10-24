@@ -17,15 +17,13 @@
     .small{font-size:12px;color:var(--muted)}
     .err{color:#ff9aa2}
     .ok{color:#a4ffb3}
-    .row{display:flex;gap:14px;flex-wrap:wrap}
     code{background:#0f1530;border:1px solid #202b55;padding:2px 6px;border-radius:6px}
-    footer{margin-top:10px}
   </style>
 </head>
 <body>
   <main class="card">
     <h1>Letter Counter</h1>
-    <p>Put your name in the box below. We’ll count alphabetic letters (A–Z, a–z &amp; Unicode letters).</p>
+    <p>Enter any text below. We’ll count alphabetic letters (A–Z, a–z &amp; Unicode letters).</p>
 
     <form id="form">
       <input id="text" type="text" placeholder="e.g., Hello World 123!" autocomplete="off" />
@@ -33,21 +31,19 @@
     </form>
 
     <div id="result" class="result" hidden></div>
-    <footer class="small">
-      API: <code id="apiLabel"></code> • Note: per-IP rate limit: <code>10 / minute</code>.
-    </footer>
+    <p class="small">API: <code id="apiLabel"></code> • Note: per-IP rate limit may apply.</p>
   </main>
 
   <script>
-    // === Configure your API Gateway invoke URL here ===
-    const API_URL = "https://w7lgtnuyvehd3unquantfoufjy0qaphc.lambda-url.us-east-2.on.aws/"; // 
+    // Your Lambda Function URL (CORS must allow your GitHub Pages origin)
+    const FUNCTION_URL = "https://w7lgtnuyvehd3unquantfoufjy0qaphc.lambda-url.us-east-2.on.aws/";
 
     const form = document.getElementById('form');
     const input = document.getElementById('text');
     const result = document.getElementById('result');
     const button = document.getElementById('submit');
     const apiLabel = document.getElementById('apiLabel');
-    apiLabel.textContent = API_URL || "(not configured)";
+    apiLabel.textContent = FUNCTION_URL;
 
     function show(msg, cls="") {
       result.hidden = false;
@@ -57,10 +53,10 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const text = (input.value ?? "").toString();
+      const text = (input.value ?? "").toString().trim();
 
-      if (!API_URL || API_URL.includes("https://w7lgtnuyvehd3unquantfoufjy0qaphc.lambda-url.us-east-2.on.aws/")) {
-        show("API URL is not configured.", "err");
+      if (!FUNCTION_URL) {
+        show(" Function URL not configured.", "err");
         return;
       }
 
@@ -68,7 +64,7 @@
       show("Working…");
 
       try {
-        const resp = await fetch(API_URL, {
+        const resp = await fetch(FUNCTION_URL, {
           method: "POST",
           mode: "cors",
           headers: { "Content-Type": "application/json" },
@@ -78,24 +74,19 @@
         const isJson = (resp.headers.get("content-type") || "").includes("application/json");
         const data = isJson ? await resp.json() : {};
 
-        if (resp.status === 200) {
+        if (resp.ok) {
           const letters = data.letters ?? "(unknown)";
-          const count = data.requests_in_window;
-          const limit = data.limit;
-          const win = data.window_seconds;
-          show(
-            `Letters: <strong class="ok">${letters}</strong><br>` +
-            `<span class="small">Requests in current window: <code>${count}/${limit}</code> (window: ${win}s)</span>`
-          );
+          show(` Letters: <strong class="ok">${letters}</strong>`);
         } else if (resp.status === 429) {
           const msg = data.error || "Too Many Requests";
           const detail = data.message ? ` – ${data.message}` : "";
-          show('<strong>${msg}</strong>${detail}`, "err");
+          show(` <strong>${msg}</strong>${detail}`, "err");
         } else {
-          show(`Unexpected response (${resp.status}). ${data.error || ""}`, "err");
+          const errMsg = data.error || data.message || "Unexpected response";
+          show(` ${errMsg} (status ${resp.status})`, "err");
         }
       } catch (err) {
-        show(`Network or CORS error. ${err.message}`, "err");
+        show(` Network or CORS error. ${err.message}`, "err");
       } finally {
         button.disabled = false;
       }
