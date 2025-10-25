@@ -76,7 +76,7 @@
 
         if (resp.ok) {
           const letters = data.letters ?? "(unknown)";
-          show(` Letters: <strong class="ok">${letters}</strong>`);
+		show(` Letters: <strong class="ok">${data} ${letters}</strong>`);
         } else if (resp.status === 429) {
           const msg = data.error || "Too Many Requests";
           const detail = data.message ? ` – ${data.message}` : "";
