@@ -77,6 +77,8 @@
         if (resp.ok) {
 	  console.log("data = ", data);
 	  console.log("data.body = ", data.body);
+	  console.log("data.body.letters = ", data.body.letters);
+	  console.log("data.letters = ", data.letters);
           const letters = data.body.letters ?? "(unknown)";
 		show(` Letters: <strong class="ok">${letters}</strong>`);
         } else if (resp.status === 429) {
