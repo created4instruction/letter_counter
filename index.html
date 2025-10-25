@@ -23,19 +23,19 @@
 <body>
   <main class="card">
     <h1>Letter Counter</h1>
-    <p>Enter any text below. We’ll count alphabetic letters (A–Z, a–z &amp; Unicode letters).</p>
+    <p>Put your name in the box below. Your name will be sent to AWS for analysis.</p>
 
     <form id="form">
-      <input id="text" type="text" placeholder="e.g., Hello World 123!" autocomplete="off" />
+      <input id="text" type="text" placeholder="e.g. Joe Doe" autocomplete="off" />
       <button id="submit" type="submit">Count letters</button>
     </form>
 
     <div id="result" class="result" hidden></div>
-    <p class="small">API: <code id="apiLabel"></code> • Note: per-IP rate limit may apply.</p>
+    <!-- <p class="small">API: <code id="apiLabel"></code> • Note: per-IP rate limit may apply.</p>
+    -->
   </main>
 
   <script>
-    // Your Lambda Function URL (CORS must allow your GitHub Pages origin)
     const FUNCTION_URL = "https://w7lgtnuyvehd3unquantfoufjy0qaphc.lambda-url.us-east-2.on.aws/";
 
     const form = document.getElementById('form');
@@ -77,9 +77,7 @@
         if (resp.ok) {
 	  console.log("data = ", data);
 	  console.log("data.body = ", data.body);
-	  console.log("data.body.letters = ", data.body.letters);
-	  console.log("data.letters = ", data.letters);
-          const letters = JSON.parse(data.body).letters ?? "(unknown)";
+          const letters = JSON.parse(data.body).letters ?? "(failed)";
 		show(` Letters: <strong class="ok">${letters}</strong>`);
         } else if (resp.status === 429) {
 	const letters = data.letters ?? "(unknown)";
