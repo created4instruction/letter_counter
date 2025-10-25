@@ -74,7 +74,7 @@
         const isJson = (resp.headers.get("content-type") || "").includes("application/json");
         const data = isJson ? await resp.json() : {};
 
-        if (resp.status==200) {
+        if (resp.status===200) {
           const letters = data.letters ?? "(unknown)";
           show(` Letters: <strong class="ok">${letters}</strong>`);
         } else if (resp.status === 429) {
