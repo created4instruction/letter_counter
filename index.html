@@ -75,7 +75,9 @@
         const data = isJson ? await resp.json() : {};
 
         if (resp.ok) {
-          const letters = data.letters ?? "(unknown)";
+	  console.log("data = ", data);
+
+          const letters = data.body.letters ?? "(unknown)";
 		show(` Letters: <strong class="ok">${data} ${letters}</strong>`);
         } else if (resp.status === 429) {
           const msg = data.error || "Too Many Requests";
