@@ -79,9 +79,10 @@
 	  console.log("data.body = ", data.body);
 	  console.log("data.body.letters = ", data.body.letters);
 	  console.log("data.letters = ", data.letters);
-          const letters = data.body.json().letters ?? "(unknown)";
+          const letters = JSON.parse(data.body).letters ?? "(unknown)";
 		show(` Letters: <strong class="ok">${letters}</strong>`);
         } else if (resp.status === 429) {
+	const letters = data.letters ?? "(unknown)";
           const msg = data.error || "Too Many Requests";
           const detail = data.message ? ` – ${data.message}` : "";
           show(` <strong>${msg}</strong>${detail}`, "err");
