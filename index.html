@@ -43,7 +43,7 @@
     const result = document.getElementById('result');
     const button = document.getElementById('submit');
     const apiLabel = document.getElementById('apiLabel');
-    apiLabel.textContent = "";
+    apiLabel.textContent = "aws";
 
     function show(msg, cls="") {
       result.hidden = false;
@@ -78,7 +78,8 @@
 	  console.log("data = ", data);
 	  console.log("data.body = ", data.body);
           const letters = JSON.parse(data.body).letters ?? "(failed)";
-		show(` Letters: <strong class="ok">${letters}</strong>`);
+	  const message = JSON.parse(data.body).message ?? "(None)";
+		show(` Letters: <strong class="ok">${letters}</strong>\n Message: <strong class="ok">${message}</strong>`);
         } else if (resp.status === 429) {
 	const letters = data.letters ?? "(unknown)";
           const msg = data.error || "Too Many Requests";
